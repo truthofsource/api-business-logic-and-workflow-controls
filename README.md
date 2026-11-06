@@ -47,7 +47,7 @@ This project is derived from actual workforce-platform implementation. Identifyi
 | Actual route reference | Authorization before store, JSON/body limits and useful failures | [Route](reference/wagechanges-route.ts) |
 | Actual SQL store reference | Serializable transaction, locking, parameterized queries and audit | [Store](reference/wageChanges.ts) |
 | Local demonstration | Exercise actual rule/evaluation code using fictional data | [Demo](scripts/demo.py) |
-| Dated context | Keep recorded implementation separate from new local evidence | [Context](data/history.json) |
+| Dated context | Keep earlier platform results separate from the new local example | [Context](data/history.json) |
 
 ## Proof It Works
 
@@ -100,6 +100,6 @@ State clearly which system is being checked, who owns it and what the result act
 | [Commands](docs/COMMANDS.md) | Local tests, expected output and inspection |
 | [Operations and scaling](docs/OPERATIONS-AND-SCALING.md) | Strengths, weaknesses, costs and growth |
 | [Source map](docs/SOURCE-MAP.md) | Actual files and public adaptations |
-| [Validation](docs/VALIDATION.md) | Observed local evidence and remaining integration scope |
+| [Validation](docs/VALIDATION.md) | What was tested locally and what still needs real-service testing |
 
 No Azure service, business record or live state was changed. The public validation workflow is manual-only and was not dispatched, conserving hosted Actions minutes.
