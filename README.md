@@ -1,6 +1,6 @@
 # API Business Logic and Reliable Workforce Processes
 
-**An API route is the entrance. Business rules decide which change is valid, authorized and still current.**
+**Make sure a business change is allowed, accurate and based on the latest information.**
 
 [Business problem](#the-business-problem) · [Solution](#the-solution) · [Strengths](#engineering-strengths) · [Proof](#proof-it-works) · [Commands](docs/COMMANDS.md)
 
@@ -8,20 +8,20 @@
 
 ## The Business Problem
 
-Staff requests could contain malformed rates, an invalid role or an outdated revision. A payroll packet that looked empty could still contain meaningful edits in a prior version. Saving JSON without these rules could overwrite decisions or discard important work.
+Staff may enter an invalid pay rate, lack permission to approve a change, or act on information someone else has already updated. A payroll draft may also contain important earlier edits even when its latest version looks empty. The application must catch these cases before changing or deleting records.
 
 ## The Solution
 
-Separate route validation, trusted identity/role checks, pure business rules and the transactional store. Use actual wage-input/revision rules and complete payroll-draft history classification, with parameterized SQL/audit source shown separately.
+Put the business rules on the server, where users cannot bypass them by changing the page. Check the requested change, the person’s permissions and the record’s version before saving. This project uses real wage and payroll-draft rules with fictional examples.
 
-**Business outcome:** The runnable example rejects unauthorized approvals and stale decisions before a store operation, and preserves the distinction between empty, meaningful and unknown draft history. It demonstrates how business rules protect operational records rather than merely returning HTTP success.
+**Business outcome:** The example blocks unauthorized or out-of-date approvals and avoids treating meaningful payroll work as an empty draft.
 
 ## Engineering Strengths
 
 | Strength | Practical value |
 | --- | --- |
 | **Rules stay testable** | Pure rules can be checked without an HTTP server, Azure login or live database. |
-| **Conflicts are explicit** | A stale revision or nonpending decision returns a conflict instead of silently overwriting newer work. |
+| **Conflicts are explicit** | A out-of-date record version or decision that is no longer awaiting approval returns a conflict instead of silently overwriting newer work. |
 | **Data meaning is preserved** | Draft classification examines every saved version and treats unknown shapes conservatively. |
 
 ## Architecture
@@ -42,8 +42,8 @@ This project is derived from actual workforce-platform implementation. Identifyi
 
 | Component | Purpose | Implementation |
 | --- | --- | --- |
-| Actual extracted wage rules | Validate money/date/action fields, role combination and pending revision | [Rules](src/wageRules.ts) |
-| Actual draft classifier | Examine every payroll snapshot; refuse unknown/malformed shape | [Source](src/payrollPacketDiscard.ts) |
+| Actual extracted wage rules | Validate money/date/action fields, role combination and version still awaiting a decision | [Rules](src/wageRules.ts) |
+| Actual draft classifier | Examine every payroll snapshot; refuse unknown/incorrectly structured shape | [Source](src/payrollPacketDiscard.ts) |
 | Actual route reference | Authorization before store, JSON/body limits and useful failures | [Route](reference/wagechanges-route.ts) |
 | Actual SQL store reference | Serializable transaction, locking, parameterized queries and audit | [Store](reference/wageChanges.ts) |
 | Local demonstration | Exercise actual rule/evaluation code using fictional data | [Demo](scripts/demo.py) |
@@ -59,13 +59,13 @@ node --experimental-strip-types src/example.mjs
 python -B scripts/demo.py
 ```
 
-**Observed:** Ten Node tests passed: two original discard tests and eight new focused tests over the actual extracted wage rules. [Validation](docs/VALIDATION.md) records the exact scope and distinguishes pure/mock checks from hosted integration.
+**Observed:** Ten Node tests passed: two original discard tests and eight new focused tests over the actual extracted wage rules. [Validation](docs/VALIDATION.md) records the exact scope and distinguishes pure/mock checks from testing with the hosted services.
 
 ### 2. Inspect the decision output
 
 ![Working reference example](docs/images/02-example.png)
 
-The output is explicitly fictional and exercises the included logic. A successful rule/mock result is not a completed real-world operation. The public runtime uses pure rules and a small error adapter. It does not validate JWTs, open SQL, prove distributed concurrency or complete a payroll transaction.
+The output is explicitly fictional and exercises the included logic. A successful rule test or simulation is not a completed real-world operation. The public example runs standalone rules and reports errors. It does not verify login credentials, connect to SQL, test competing requests across servers or complete payroll.
 
 ### 3. Open the reference viewer
 
@@ -81,16 +81,16 @@ Business logic is the set of rules that gives a request meaning: who can approve
 
 The actual wage route authenticates/authorizes before opening the store, separates self-service current pay from staff operations, restricts content type/body size/fields and maps known errors to useful responses. Its Functions authLevel=anonymous means the app's own verified role middleware is responsible for authorization; it does not mean the business action is public.
 
-The extracted rules require a positive decimal rate with at most two decimal places and a real date. Approval requires Admin or HR together with Payroll. The row must still be pending at the supplied revision. Invalid input is 400, wrong permission is 403 and stale state is 409. An unexpected store failure asks the user to reload history before retrying because a save result may be uncertain.
+The extracted rules require a positive decimal rate with at most two decimal places and a real date. Approval requires Admin or HR together with Payroll. The row must still be pending at the record version supplied in the request. Invalid input is 400, wrong permission is 403 and stale state is 409. An unexpected store failure asks the user to reload history before retrying because a save result may be uncertain.
 
-The full referenced store uses parameterized SQL, a serializable transaction and locking to recheck current history before mutation, then records an audit event. Stable business IDs and current revision/baseline checks help control duplicates and stale requests. The public pure-rule tests do not prove those SQL concurrency or retry paths; those remain an integration boundary.
+The full database code checks the saved history again before changing it. It uses SQL queries that keep user values separate from query instructions, and database locks that prevent competing changes. It then saves an audit record. Record IDs and version checks help prevent duplicates and outdated changes. The standalone rule tests do not test these database and retry steps.
 
-The draft classifier checks all versions. Earlier lines, payment changes, secure details or meaningful notes make the packet a draft even when the latest version has no hours. Unknown/malformed snapshots return unknown rather than being classified safe to discard.
+The draft classifier checks all versions. Earlier lines, payment changes, secure details or meaningful notes make the packet a draft even when the latest version has no hours. Unknown/incorrectly structured snapshots return unknown rather than being classified safe to discard.
 
 
 ## Operations, Limits and Growth
 
-Keep the target, owning state/identity and evidence boundary explicit. Validate expected failures as well as success; do not let an incomplete result become a green indicator. Preserve private inputs and unrelated changes. Proposed scaling needs measured bottlenecks, cost review, downstream limits and repeated denied/recovery checks. [Operations and scaling](docs/OPERATIONS-AND-SCALING.md).
+State clearly which system is being checked, who owns it and what the result actually proves. Test the cases that should be denied or rejected as well as the successful ones. Keep incomplete results clearly marked. Preserve private inputs and unrelated changes. Before expanding the design, measure what is slow or limited, review costs, and check access restrictions and recovery again. [Operations and scaling](docs/OPERATIONS-AND-SCALING.md).
 
 ## Project Guides
 
