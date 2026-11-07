@@ -104,6 +104,10 @@ The draft classifier checks all versions. Earlier lines, payment changes, secure
 
 State clearly which system is being checked, who owns it and what the result actually proves. Test the cases that should be denied or rejected as well as the successful ones. Keep incomplete results clearly marked. Preserve private inputs and unrelated changes. Before expanding the design, measure what is slow or limited, review costs, and check access restrictions and recovery again. [Operations and scaling](docs/OPERATIONS-AND-SCALING.md).
 
+## Troubleshooting Lessons
+
+A draft-discard operation failed because the runtime identity lacked one required column read. Tests with database-owner authority had missed the gap. [Read the incident, evidence and verification](docs/LESSONS-LEARNED.md).
+
 ## Project Guides
 
 | Guide | Purpose |
