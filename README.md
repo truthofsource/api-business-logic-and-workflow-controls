@@ -2,7 +2,7 @@
 
 **Make sure a business change is allowed, accurate and based on the latest information.**
 
-[Business problem](#the-business-problem) · [Solution](#the-solution) · [Strengths](#engineering-strengths) · [Proof](#proof-it-works) · [Commands](docs/COMMANDS.md)
+[Business problem](#the-business-problem) · [Solution](#the-solution) · [Strengths](#engineering-strengths) · [Proof](#proof-it-works) · [Commands](docs/COMMANDS.md) · [Step by step](#step-by-step)
 
 ![Local implementation reference](docs/images/01-overview.png)
 
@@ -15,6 +15,18 @@ Staff may enter an invalid pay rate, lack permission to approve a change, or act
 Put the business rules on the server, where users cannot bypass them by changing the page. Check the requested change, the person’s permissions and the record’s version before saving. This project uses real wage and payroll-draft rules with fictional examples.
 
 **Business outcome:** The example blocks unauthorized or out-of-date approvals and avoids treating meaningful payroll work as an empty draft.
+
+## Step by Step
+
+A short walkthrough of the process, with technical instructions and evidence limits in the sections below.
+
+1. **Receive the requested change** — The server receives an action such as a wage update or payroll decision. It checks who is making the request and which record they want to change.
+
+2. **Check the business rules** — The application checks the values, permissions and current record status. An outdated or unauthorized request is rejected before anything is saved.
+
+3. **Save a consistent result** — An allowed change is saved together with its audit record. Checks inside the database help prevent two competing requests from applying conflicting decisions.
+
+4. **Explain the outcome** — The application returns a useful success, validation or conflict message. The local examples demonstrate these decisions with fictional records.
 
 ## Engineering Strengths
 
