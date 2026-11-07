@@ -16,15 +16,28 @@ Put the business rules on the server, where users cannot bypass them by changing
 
 **Business outcome:** The example blocks unauthorized or out-of-date approvals and avoids treating meaningful payroll work as an empty draft.
 
+## Tools Used and What They Do
+
+| Tool or service | What it does | Where it fits |
+| --- | --- | --- |
+| Node.js and TypeScript | Express the pay, approval, version and discard rules. | Actual selected rule implementation and source tests. |
+| Azure Functions | Receive the protected business request in the platform. | Reference route context; the local example is not a deployed handler. |
+| Microsoft Entra ID | Supply roles and verified staff identity for allowed actions. | Actual access boundary; fixture roles do not verify real tokens. |
+| Azure SQL and T-SQL | Apply guarded changes and preserve related records together. | Actual store context; pure-rule tests do not exercise live transactions. |
+| Node test runner and Python | Check extracted decisions and show fictional outcomes. | Local validation and preview utilities. |
+| Terraform and GitHub Actions | Provide related infrastructure and manual reference checks. | No business operation or infrastructure change occurs through the demo. |
+
+The rule, API route, database permission and user interface are separate parts of one process. Passing a local rule test does not establish a completed approval, payment or saved record.
+
 ## Step by Step
 
 A short walkthrough of the process, with technical instructions and evidence limits in the sections below.
 
 1. **Receive the requested change** — The server receives an action such as a wage update or payroll decision. It checks who is making the request and which record they want to change.
 
-2. **Check the business rules** — The application checks the values, permissions and current record status. An outdated or unauthorized request is rejected before anything is saved.
+2. **Check the business rules (TypeScript)** — The application checks the values, permissions and current record status. An outdated or unauthorized request is rejected before anything is saved.
 
-3. **Save a consistent result** — An allowed change is saved together with its audit record. Checks inside the database help prevent two competing requests from applying conflicting decisions.
+3. **Save a consistent result (Azure SQL)** — An allowed change is saved together with its audit record. Checks inside the database help prevent two competing requests from applying conflicting decisions.
 
 4. **Explain the outcome** — The application returns a useful success, validation or conflict message. The local examples demonstrate these decisions with fictional records.
 
