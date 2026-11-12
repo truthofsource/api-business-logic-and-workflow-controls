@@ -8,7 +8,11 @@
 
 ## The Business Problem
 
-Staff may enter an invalid pay rate, lack permission to approve a change, or act on information someone else has already updated. A payroll draft may also contain important earlier edits even when its latest version looks empty. The application must catch these cases before changing or deleting records.
+Payroll and employee administration depend on more than a form being filled in. A wage change needs a valid amount, an authorized reviewer and the current record. A payroll draft may contain meaningful earlier work even if its latest visible version appears empty. Staff need those distinctions to remain true when several people use the system.
+
+Two reviewers can open the same record before either saves. Without a current-version check, the later action can overwrite or approve information the reviewer never saw. A delete operation that looks only at the newest draft can remove work whose history still matters. Hiding controls in the browser does not enforce those rules on a direct request.
+
+The business need was dependable server-side rules for approval, change and deletion, so the stored result reflects an allowed action on the right version of the record.
 
 ## The Solution
 
